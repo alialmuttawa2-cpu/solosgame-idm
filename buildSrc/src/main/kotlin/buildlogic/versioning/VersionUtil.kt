@@ -26,10 +26,10 @@ fun Project.getAppName(): String {
 }
 
 fun Project.getPrettifiedAppName(): String {
-    return "AB Download Manager"
+    return "SolosGame IDM"
 }
 fun Project.getAppDataDirName(): String {
-    return ".abdm"
+    return ".solosgame-idm"
 }
 
 fun Project.getApplicationPackageName(): String {

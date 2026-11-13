@@ -1,180 +1,65 @@
-<div align="center">
-  <a href="https://abdownloadmanager.com" target="_blank">
-    <img width="180" src="assets/logo/app_logo_with_background.svg" alt="AB Download Manager Logo">
-  </a>
-</div>
-<h1 align="center">AB Download Manager</h1>
-<p align="center">
-    <a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release"></a>
-    <a href="https://abdownloadmanager.com"><img alt="AB Download Manager Website" src="https://img.shields.io/badge/project-website-purple?&labelColor=gray"></a>
-    <a href="https://t.me/abdownloadmanager"><img alt="Telegram Channel" src="https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram&labelColor=gray"></a>
-    <a href="https://t.me/abdownloadmanager_discussion"><img alt="Telegram Group" src="https://img.shields.io/badge/Telegram-Group-blue?logo=telegram&labelColor=gray"></a>
-    <a href="https://crowdin.com/project/ab-download-manager"><img alt="Crowdin" src="https://badges.crowdin.net/ab-download-manager/localized.svg"></a>
-</p>
+# SolosGame IDM
 
-<a href="https://abdownloadmanager.com" target="_blank">
-    <img alt="AB Download Manager Banner" src="assets/banners/app_banner.png"/>
-</a>
+SolosGame IDM is a Windows desktop download manager. It is a modified version of [AB Download Manager](https://github.com/amir1376/ab-download-manager) by [amir1376](https://github.com/amir1376). The original project is Apache-2.0; this repository keeps that [LICENSE](LICENSE) and the original copyright. See [NOTICE](NOTICE) for what was changed.
 
-## Introduction
-
-[AB Download Manager](https://abdownloadmanager.com) is a desktop app that helps you manage and organize your downloads more efficiently than ever before.
+This copy does not check for or install updates from the upstream AB Download Manager releases, Winget, or Homebrew.
 
 ## Features
 
-- ⚡️ Faster Download Speed
-- ⏰ Queues and Schedulers
-- 🌐 Browser Extensions
-- 💻 Multiplatform (Android / Windows / Linux / Mac)
-- 🌙 Multiple Themes (Dark/Light/Black and more) with modern UI
-- ❤️ Free and Open Source
+- Faster multi-connection downloads
+- Queues and schedulers
+- Browser integration hooks
+- Themes and a desktop UI
+- Same download features as the AB Download Manager desktop app
 
-Please visit [Project Website](https://abdownloadmanager.com) for more info.
+## Install on Windows
 
-## Installation
+GitHub Actions builds an unsigned NSIS installer (`.exe`) on `windows-latest`. Download the `SolosGame-IDM-windows-installer` artifact from a successful workflow run.
 
-<a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release"></a>
+The installer uses its own Windows package name (`SolosGameIDM`), upgrade GUID, and install folder (`%LOCALAPPDATA%\SolosGameIDM`), and stores config in `%USERPROFILE%\.solosgame-idm`, so it can sit beside an official AB Download Manager install. The installer is not code-signed. Windows SmartScreen may warn before you run it.
 
-### Download and Install the App
+## Chrome extension
 
-<a href="https://abdownloadmanager.com"><img src="https://img.shields.io/badge/Official%20Website-897BFF?logo=abdownloadmanager&logoColor=fff&style=flat-square" alt="Official Website" height="32" /></a>
-<a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img src="https://img.shields.io/badge/GitHub%20Releases-2a2f36?logo=github&logoColor=fff&style=flat-square" alt="GitHub Releases" height="32" /></a>
+`browser-extension/` is a Manifest V3 extension named **SolosGame IDM Integration**. Right-click a link, image, video, audio item, or selected http(s) URL and choose **Download with SolosGame IDM**. It `POST`s that URL to the running app at `http://127.0.0.1:15151/add` (the browser integration server, on by default). The page URL is sent as `downloadPage` and a `Referer` header, and site cookies are sent as a `Cookie` header when Chrome allows it. If the app is not running, the extension shows a badge and a notification.
 
-#### Installation script (Linux)
+When Chrome starts an http(s) download, the extension opens a small popup: **Download with SolosGame IDM** or **Download normally (Chrome)**, with **Remember my choice**. The options page can set that to Always ask, Always IDM, or Always Chrome. Choosing IDM cancels the Chrome download only after the app accepts the URL. If the app is not reachable, the Chrome download continues and a notice is shown. No answer within 30 seconds keeps the download in Chrome. `blob:`, `data:`, and `file:` URLs, and downloads this extension starts itself, are left to Chrome. The right-click menu still works.
 
-The recommended way to install the app on Linux
+Load it unpacked:
 
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/amir1376/ab-download-manager/master/scripts/install.sh)
-```
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode**.
+3. Click **Load unpacked** and choose the `browser-extension` folder (or the unzipped `SolosGame-IDM-chrome-extension` artifact).
 
-#### Winget or Scoop (for Windows)
+The extension options page can change the port and, if you turn on API auth in the app, the `X-Api-Key` value.
 
-**winget**:
+## Build from source
 
-```bash
-winget install amir1376.ABDownloadManager
-```
-
-**scoop**:
+The desktop app is Kotlin and Compose Multiplatform. It needs **JDK 25** (JetBrains Runtime, the same toolchain the Windows workflow installs).
 
 ```bash
-scoop install extras/abdownloadmanager
+# Windows installer (NSIS must be installed; makensis.exe on PATH or in
+# "C:\Program Files (x86)\NSIS\")
+./gradlew createReleaseFolderForCi
 ```
 
-#### Homebrew (for macOS & Linux)
+The installer `.exe` is written under `build/ci-release/binaries/`.
+
+To skip the Android module while packaging (the Windows workflow does this):
 
 ```bash
-brew tap amir1376/tap && brew install --cask ab-download-manager
+SKIP_ANDROID_BUILD=true ./gradlew createReleaseFolderForCi
 ```
 
-> ⚠️ **Warning:** This software is NOT on Google Play or other app stores unless listed here. Any version **claiming to be or related to this project** should be considered SCAM and UNSAFE.
+Desktop and shared/downloader tests:
 
-For alternative installation methods, uninstallation instructions, and more details, please refer to the [wiki](https://github.com/amir1376/ab-download-manager/wiki/) page.
+```bash
+./gradlew :desktop:app:test :desktop:app-utils:test :desktop:shared:test :downloader:core:desktopTest :downloader:monitor:desktopTest :shared:app:desktopTest :shared:utils:desktopTest :shared:updater:desktopTest :shared:config:test
+```
 
-### Browser Extensions
+## Credit
 
-<a href="https://addons.mozilla.org/en-US/firefox/addon/ab-download-manager/"><img src="https://img.shields.io/amo/v/ab-download-manager?label=Firefox&logo=firefoxbrowser" alt="Firefox Add-ons Version"></a>
-<a href="https://chromewebstore.google.com/detail/bbobopahenonfdgjgaleledndnnfhooj"> <img src="https://img.shields.io/chrome-web-store/v/bbobopahenonfdgjgaleledndnnfhooj?label=Chrome&logo=googlechrome" alt="Chrome Web Store Version"></a>
+SolosGame IDM is a modified version of AB Download Manager by amir1376.
 
-You can download the browser extension to integrate the app with your browser.
-
-<p align="left">
-<a href="https://addons.mozilla.org/firefox/addon/ab-download-manager/">
-    <picture>
-        <img alt="Chrome Extension" src="./assets/banners/firefox-extension.png" height="48">
-    </picture>
-</a>
-<a href="https://chromewebstore.google.com/detail/bbobopahenonfdgjgaleledndnnfhooj">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/banners/chrome-extension_dark.png" height="48">
-        <source media="(prefers-color-scheme: light)" srcset="./assets/banners/chrome-extension_light.png" height="48">
-        <img alt="Chrome Extension" src="./assets/banners/chrome-extension_light.png" height="48">
-    </picture>
-</a>
-</p>
-
-## Screenshots
-
-<div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/screenshots/app-home_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/screenshots/app-home_light.png">
-  <img alt="App Home Section" src="./assets/screenshots/app-home_dark.png">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/screenshots/app-download_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/screenshots/app-download_light.png">
-  <img alt="App Download Section" src="./assets/screenshots/app-download_dark.png">
-</picture>
-</div>
-
-## Community
-
-- 📢 [Telegram Channel](https://t.me/abdownloadmanager) – News, announcements, and release updates.
-- 💬 [Telegram Group](https://t.me/abdownloadmanager_discussion) – Get help, report bugs, suggest features, and discuss
-  the project with the community.
-
-## Repositories And Source Code
-
-There are multiple repositories related to the **AB Download Manager** project:
-
-| Repository                                                                                 | Description                                                                   |
-|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [Main Application](https://github.com/amir1376/ab-download-manager) (You are here)         | Contains the  **Application** that runs on your  **device**                   |
-| [Browser Integration](https://github.com/amir1376/ab-download-manager-browser-integration) | Contains the **Browser Extension** to be installed on your  **browser**       |
-| [Website](https://github.com/amir1376/ab-download-manager-website)                         | Contains the **AB Download Manager** [website](https://abdownloadmanager.com) |
-
-I've spent a lot of time to create this project.
-
-If you like my work, please consider giving it a ⭐ — thanks! ❤️
-
-## Bug Report
-
-If you notice any bugs in the source code, please report them via the `GitHub Issues` section.
-
-## Build From Source
-
-To compile and test the desktop app on your local machine,
-follow these steps:
-
-1. Clone the project.
-2. Download and extract the [JBR](https://github.com/JetBrains/JetBrainsRuntime/releases), and make it available by either:
-    
-    - Adding it to your `PATH`, or
-    - Setting the `JAVA_HOME` environment variable to its installation path.
-  
-3. Navigate to the project directory, open your terminal and execute the following command:
-
-    ```bash
-    ./gradlew createReleaseFolderForCi
-    ```
-
-4. The output will be available at:
-
-    ```
-    <project_dir>/build/ci-release
-    ```
-
-> **Note**. This project is compiled and published by GitHub actions [here](./.github/workflows/publish.yml), so if you
-> faced any problem you can check that too.
-
-## Translations
-
-<a href="https://crowdin.com/project/ab-download-manager"><img alt="Crowdin" src="https://badges.crowdin.net/ab-download-manager/localized.svg"></a>
-
-If you’d like to help translate AB Download Manager into another language, or improve existing translations, you can do
-so on Crowdin. Here’s how:
-
-- Visit the project in [Crowdin](https://crowdin.com/project/ab-download-manager)
-- Please DO NOT submit translations via pull requests.
-- If you want to add a new language, please see [this](https://github.com/amir1376/ab-download-manager/issues/144).
-
-## Contribution
-
-If you want to contribute to this project, please read [Contributing Guide](CONTRIBUTING.md) first.
-
-## Support the Project
-
-If you'd like to support the project, you can find details on how to donate in the [DONATE.md](DONATE.md) file.
+- Upstream: https://github.com/amir1376/ab-download-manager
+- License: Apache License 2.0 (`LICENSE`)
+- Changes: see `NOTICE`

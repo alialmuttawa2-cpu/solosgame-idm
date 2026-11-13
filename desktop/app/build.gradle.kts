@@ -153,7 +153,7 @@ nucleus {
             }
             packageVersion = getAppVersionStringForPackaging()
             packageName = getAppName()
-            vendor = "abdownloadmanager.com"
+            vendor = "SolosGame"
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             val menuGroupName = getPrettifiedAppName()
             licenseFile.set(rootProject.file("LICENSE"))
@@ -205,11 +205,12 @@ installerPlugin {
         extraParams = mapOf(
             "native_messaging_host_binary_name" to nativeMessagingHostBinaryName,
             "cli_binary_name" to cliBinaryName,
-            "app_publisher" to "abdownloadmanager.com",
+            "app_publisher" to "SolosGame",
             "app_version_with_build" to "${getAppVersionStringForPackaging(TargetFormat.Exe)}.0",
-            "source_code_url" to "https://github.com/amir1376/ab-download-manager",
-            "project_website" to "www.abdownloadmanager.com",
+            "source_code_url" to "https://github.com/alialmuttawa2-cpu/solosgame-idm",
+            "project_website" to "github.com/alialmuttawa2-cpu/solosgame-idm",
             "copyright" to "© 2024-present AB Download Manager App",
+            "upgrade_uuid" to (providers.gradleProperty("INSTALLER.WINDOWS.UPGRADE_UUID").orNull ?: ""),
             "header_image_file" to project.file("resources/installer/abdm-header-image.bmp"),
             "sidebar_image_file" to project.file("resources/installer/abdm-sidebar-image.bmp")
         )

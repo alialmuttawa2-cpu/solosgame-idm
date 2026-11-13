@@ -1,6 +1,10 @@
-# Contributing to AB Download Manager
+# Contributing to SolosGame IDM
 
-Thank you for your interest in contributing to AB Download Manager! I appreciate any help you can offer.
+SolosGame IDM is a modified version of AB Download Manager by amir1376
+(https://github.com/amir1376/ab-download-manager). Do not send pull requests
+or issues to the upstream repository.
+
+Thank you for your interest in contributing.
 
 ## What Contributions Are Accepted?
 
@@ -19,7 +23,7 @@ I welcome the following types of contributions:
 
 #### Before opening an issue:
 
-- Make sure you are using the [latest version](https://github.com/amir1376/ab-download-manager/releases/latest).
+- This fork does not publish or install AB Download Manager updates. Build SolosGame IDM from this repository.
 - Search existing issues.
 - Include steps to reproduce the problem.
 - Include logs when applicable.

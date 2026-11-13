@@ -17,8 +17,8 @@ class DesktopDirectLinkUpdateApplier(
         return updatePreparer
     }
     override fun updateSupported(): Boolean {
-        val installationFolder = installationFolder ?: return false
-        return File(installationFolder).canWrite()
+        // SolosGame IDM does not apply upstream (or any) automatic updates.
+        return false
     }
 
     override fun validateAppStateOnApplyUpdate() {

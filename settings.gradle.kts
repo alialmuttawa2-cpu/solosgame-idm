@@ -13,7 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ABDownloadManager"
+rootProject.name = "SolosGameIDM"
 
 include("android:app")
 include("desktop:app")
