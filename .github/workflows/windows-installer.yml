@@ -70,21 +70,27 @@ jobs:
           $installer = Get-ChildItem -Path "build\ci-release\binaries" -Filter "*.exe" |
             Select-Object -First 1
           if (-not $installer) { throw "No installer .exe was produced" }
-          Write-Host "Installing $($installer.FullName)"
+          if ($installer.Length -lt 1MB) { throw "Installer looks empty: $($installer.Length) bytes" }
+          Write-Host "Installer: $($installer.Name) ($($installer.Length) bytes)"
+
+          $appImage = Get-ChildItem -Path "desktop\app\build\compose\binaries" -Filter "SolosGameIDM.exe" -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -notmatch '\\SolosGameIDMCli\.exe$' } |
+            Select-Object -First 1
+          if (-not $appImage) { throw "Packaged SolosGameIDM.exe app image was not found" }
+          Write-Host "Launching $($appImage.FullName)"
+
           $env:SKIKO_RENDER_API = "SOFTWARE"
-          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
-          if ($install.ExitCode -ne 0) {
-            throw "Silent install failed with exit code $($install.ExitCode)"
-          }
-          $exe = Join-Path $env:LOCALAPPDATA "SolosGameIDM\SolosGameIDM.exe"
-          if (-not (Test-Path $exe)) { throw "Installed executable not found at $exe" }
-          # The NSIS installer starts the app on success. Give it time to stay up.
+          $app = Start-Process -FilePath $appImage.FullName -PassThru
           Start-Sleep -Seconds 25
+          $app.Refresh()
           $running = Get-Process -Name "SolosGameIDM" -ErrorAction SilentlyContinue
-          $crash = Join-Path $env:USERPROFILE ".solosgame-idm\system\log\crash.log"
+          $dataDir = Join-Path $env:USERPROFILE ".solosgame-idm"
+          $crash = Join-Path $dataDir "system\log\crash.log"
           $hsErr = @()
-          $hsErr += Get-ChildItem -Path $env:LOCALAPPDATA\SolosGameIDM -Filter "hs_err_pid*.log" -Recurse -ErrorAction SilentlyContinue
-          $hsErr += Get-ChildItem -Path (Join-Path $env:USERPROFILE ".solosgame-idm") -Filter "hs_err_pid*.log" -Recurse -ErrorAction SilentlyContinue
+          if (Test-Path $dataDir) {
+            $hsErr = @(Get-ChildItem -Path $dataDir -Filter "hs_err_pid*.log" -Recurse -ErrorAction SilentlyContinue)
+          }
+          $hsErr += @(Get-ChildItem -Path $appImage.DirectoryName -Filter "hs_err_pid*.log" -ErrorAction SilentlyContinue)
           if (Test-Path $crash) {
             Write-Host "---- crash.log ----"
             Get-Content $crash -Raw
@@ -94,20 +100,19 @@ jobs:
             $hsErr | ForEach-Object { Write-Host $_.FullName; Get-Content $_.FullName -TotalCount 40 }
             throw "JVM crash log found"
           }
-          if (-not $running) {
-            Write-Host "Install directory:"
-            Get-ChildItem (Join-Path $env:LOCALAPPDATA "SolosGameIDM") | Select-Object Name
-            $logDir = Join-Path $env:USERPROFILE ".solosgame-idm\system\log"
+          if ($app.HasExited -or -not $running) {
+            $code = if ($app.HasExited) { $app.ExitCode } else { "still-starting" }
+            $logDir = Join-Path $dataDir "system\log"
             if (Test-Path $logDir) {
-              Get-ChildItem $logDir -Recurse | ForEach-Object {
+              Get-ChildItem $logDir -File -ErrorAction SilentlyContinue | ForEach-Object {
                 Write-Host "---- $($_.FullName) ----"
-                if (-not $_.PSIsContainer) { Get-Content $_.FullName -Raw }
+                Get-Content $_.FullName -Raw
               }
             }
-            throw "SolosGameIDM.exe is not running after 25 seconds"
+            throw "SolosGameIDM.exe is not running after 25 seconds (exit=$code)"
           }
           Write-Host "SolosGameIDM is running (pid $($running.Id -join ', '))"
-          Stop-Process -Name "SolosGameIDM" -Force
+          Stop-Process -Name "SolosGameIDM" -Force -ErrorAction SilentlyContinue
           Get-Process -Name "SolosGameIDMCli","SolosGameIDMNativeMessagingHost" -ErrorAction SilentlyContinue |
             Stop-Process -Force
 
