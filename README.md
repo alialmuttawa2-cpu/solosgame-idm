@@ -18,6 +18,18 @@ GitHub Actions builds an unsigned NSIS installer (`.exe`) on `windows-latest`. D
 
 The installer uses its own Windows package name (`SolosGameIDM`), upgrade GUID, and install folder (`%LOCALAPPDATA%\SolosGameIDM`), and stores config in `%USERPROFILE%\.solosgame-idm`, so it can sit beside an official AB Download Manager install. The installer is not code-signed. Windows SmartScreen may warn before you run it.
 
+## Chrome extension
+
+`browser-extension/` is a Manifest V3 extension named **SolosGame IDM Integration**. Right-click a link, image, video, audio item, or selected http(s) URL and choose **Download with SolosGame IDM**. It `POST`s that URL to the running app at `http://127.0.0.1:15151/add` (the browser integration server, on by default). The page URL is sent as `downloadPage` and a `Referer` header, and site cookies are sent as a `Cookie` header when Chrome allows it. If the app is not running, the extension shows a badge and a notification.
+
+Load it unpacked:
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode**.
+3. Click **Load unpacked** and choose the `browser-extension` folder (or the unzipped `SolosGame-IDM-chrome-extension` artifact).
+
+The extension options page can change the port and, if you turn on API auth in the app, the `X-Api-Key` value.
+
 ## Build from source
 
 The desktop app is Kotlin and Compose Multiplatform. It needs **JDK 25** (JetBrains Runtime, the same toolchain the Windows workflow installs).

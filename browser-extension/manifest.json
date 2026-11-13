@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "SolosGame IDM Integration",
+  "version": "1.0.0",
+  "description": "Send a link, image, media URL, or selected URL to SolosGame IDM.",
+  "icons": {
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  },
+  "action": {
+    "default_title": "SolosGame IDM Integration",
+    "default_icon": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "permissions": ["contextMenus", "cookies", "storage", "notifications"],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "<all_urls>"
+  ]
+}

@@ -112,6 +112,32 @@ jobs:
             throw "SolosGameIDM.exe is not running after 25 seconds (exit=$code)"
           }
           Write-Host "SolosGameIDM is running (pid $($running.Id -join ', '))"
+
+          $sample = node browser-extension/test/print-ci-request.js | ConvertFrom-Json
+          Write-Host "POST $($sample.endpoint) body=$($sample.body)"
+          $ok = $false
+          $lastError = ""
+          foreach ($try in 1..8) {
+            try {
+              $resp = Invoke-WebRequest -Uri $sample.endpoint -Method POST `
+                -ContentType "application/json; charset=utf-8" `
+                -Body $sample.body `
+                -UseBasicParsing
+              $text = "$($resp.Content)".Trim()
+              Write-Host "integration try $try status=$($resp.StatusCode) body=$text"
+              if ($resp.StatusCode -eq 200 -and $text -eq "OK") {
+                $ok = $true
+                break
+              }
+              $lastError = "status=$($resp.StatusCode) body=$text"
+            } catch {
+              $lastError = $_.Exception.Message
+              Write-Host "integration try $try failed: $lastError"
+              Start-Sleep -Seconds 2
+            }
+          }
+          if (-not $ok) { throw "Integration POST /add did not return OK: $lastError" }
+
           Stop-Process -Name "SolosGameIDM" -Force -ErrorAction SilentlyContinue
           Get-Process -Name "SolosGameIDMCli","SolosGameIDMNativeMessagingHost" -ErrorAction SilentlyContinue |
             Stop-Process -Force
@@ -121,4 +147,28 @@ jobs:
         with:
           name: SolosGame-IDM-windows-installer
           path: build/ci-release/binaries/*.exe
+          if-no-files-found: error
+
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate extension
+        run: node --test browser-extension/test/request.test.js
+
+      - name: Package extension
+        run: |
+          zip -r SolosGame-IDM-chrome-extension.zip \
+            manifest.json background.js request.js options.html options.js icons \
+            -x "test/*"
+          unzip -l SolosGame-IDM-chrome-extension.zip
+        working-directory: browser-extension
+
+      - name: Upload extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: SolosGame-IDM-chrome-extension
+          path: browser-extension/SolosGame-IDM-chrome-extension.zip
           if-no-files-found: error

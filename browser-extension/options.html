@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SolosGame IDM Integration</title>
+    <style>
+      body {
+        font: 13px/1.4 sans-serif;
+        margin: 12px;
+        min-width: 280px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 4px;
+      }
+      button {
+        margin-top: 12px;
+      }
+      #status {
+        min-height: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SolosGame IDM</h1>
+    <p>The desktop app listens on 127.0.0.1. Match the port in the app's browser integration settings.</p>
+    <label>
+      Port
+      <input id="port" type="number" min="1" max="65535" value="15151" />
+    </label>
+    <label>
+      API key (only if the app requires one)
+      <input id="apiKey" type="text" autocomplete="off" />
+    </label>
+    <button id="save" type="button">Save</button>
+    <p id="status"></p>
+    <script src="options.js"></script>
+  </body>
+</html>
