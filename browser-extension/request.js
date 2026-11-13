@@ -4,6 +4,94 @@
 export const DEFAULT_PORT = 15151;
 export const MENU_ID = "download-with-solosgame-idm";
 export const MENU_TITLE = "Download with SolosGame IDM";
+export const PROMPT_TIMEOUT_MS = 30_000;
+export const DOWNLOAD_CHOICE = {
+  ASK: "ask",
+  IDM: "idm",
+  CHROME: "chrome",
+};
+
+const SKIPPED_SCHEMES = new Set(["blob", "data", "file"]);
+
+export function downloadUrlOf(item) {
+  const raw = item?.finalUrl || item?.url || "";
+  return typeof raw === "string" ? raw.trim() : "";
+}
+
+function schemeOf(url) {
+  const index = url.indexOf(":");
+  if (index <= 0) return "";
+  return url.slice(0, index).toLowerCase();
+}
+
+export function skipDownloadReason(item, ownExtensionId) {
+  if (ownExtensionId && item?.byExtensionId === ownExtensionId) {
+    return "self-triggered";
+  }
+  const url = downloadUrlOf(item);
+  if (!url) return "skipped-scheme";
+  const scheme = schemeOf(url);
+  if (SKIPPED_SCHEMES.has(scheme) || (scheme !== "http" && scheme !== "https")) {
+    return "skipped-scheme";
+  }
+  return null;
+}
+
+export function classifyDownload(item, { mode = DOWNLOAD_CHOICE.ASK, ownExtensionId } = {}) {
+  const skipped = skipDownloadReason(item, ownExtensionId);
+  if (skipped) return { action: "chrome", reason: skipped };
+  if (mode === DOWNLOAD_CHOICE.CHROME) {
+    return { action: "chrome", reason: "always-chrome" };
+  }
+  if (mode === DOWNLOAD_CHOICE.IDM) {
+    return { action: "idm", reason: "always-idm" };
+  }
+  return { action: "ask", reason: "ask" };
+}
+
+export function decideAfterPrompt({ choice, remember, timedOut }) {
+  if (timedOut || choice !== "idm") {
+    return {
+      action: "chrome",
+      saveMode: !timedOut && remember ? DOWNLOAD_CHOICE.CHROME : null,
+      timedOut: Boolean(timedOut),
+    };
+  }
+  return {
+    action: "idm",
+    saveMode: remember ? DOWNLOAD_CHOICE.IDM : null,
+    timedOut: false,
+  };
+}
+
+export function planHandoff({ ok, alreadyCancelled = false }) {
+  if (ok) {
+    return {
+      cancelChrome: true,
+      resumeChrome: false,
+      restartChrome: false,
+      notice: null,
+    };
+  }
+  return {
+    cancelChrome: false,
+    resumeChrome: !alreadyCancelled,
+    restartChrome: Boolean(alreadyCancelled),
+    notice: "SolosGame IDM is not running. The download will continue in Chrome.",
+  };
+}
+
+export function buildDownloadHandoff(item, settings) {
+  const downloadUrl = normalizeHttpUrl(downloadUrlOf(item));
+  if (!downloadUrl) return null;
+  return buildAddRequest({
+    downloadUrl,
+    pageUrl: item?.referrer,
+    cookies: settings?.cookies,
+    port: settings?.port,
+    apiKey: settings?.apiKey,
+  });
+}
 
 export function normalizeHttpUrl(value) {
   if (typeof value !== "string") return null;

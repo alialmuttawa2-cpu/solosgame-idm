@@ -22,6 +22,8 @@ The installer uses its own Windows package name (`SolosGameIDM`), upgrade GUID, 
 
 `browser-extension/` is a Manifest V3 extension named **SolosGame IDM Integration**. Right-click a link, image, video, audio item, or selected http(s) URL and choose **Download with SolosGame IDM**. It `POST`s that URL to the running app at `http://127.0.0.1:15151/add` (the browser integration server, on by default). The page URL is sent as `downloadPage` and a `Referer` header, and site cookies are sent as a `Cookie` header when Chrome allows it. If the app is not running, the extension shows a badge and a notification.
 
+When Chrome starts an http(s) download, the extension opens a small popup: **Download with SolosGame IDM** or **Download normally (Chrome)**, with **Remember my choice**. The options page can set that to Always ask, Always IDM, or Always Chrome. Choosing IDM cancels the Chrome download only after the app accepts the URL. If the app is not reachable, the Chrome download continues and a notice is shown. No answer within 30 seconds keeps the download in Chrome. `blob:`, `data:`, and `file:` URLs, and downloads this extension starts itself, are left to Chrome. The right-click menu still works.
+
 Load it unpacked:
 
 1. Open `chrome://extensions`.

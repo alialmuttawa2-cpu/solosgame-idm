@@ -161,7 +161,7 @@ jobs:
       - name: Package extension
         run: |
           zip -r SolosGame-IDM-chrome-extension.zip \
-            manifest.json background.js request.js options.html options.js icons \
+            manifest.json background.js request.js options.html options.js prompt.html prompt.js icons \
             -x "test/*"
           unzip -l SolosGame-IDM-chrome-extension.zip
         working-directory: browser-extension
