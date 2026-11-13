@@ -1,0 +1,21 @@
+SolosGame IDM
+Copyright 2026 SolosGame
+
+This product is a modified version of AB Download Manager by amir1376.
+Upstream project: https://github.com/amir1376/ab-download-manager
+
+AB Download Manager is licensed under the Apache License, Version 2.0.
+The original copyright and the Apache-2.0 LICENSE file in this repository
+are retained.
+
+Files in this repository were changed to ship the desktop application as
+SolosGame IDM (display name, Windows package name, installer upgrade GUID,
+install folder, and user data directory), to turn off update checks so this
+copy does not download or offer AB Download Manager releases, and to build
+a Windows installer with GitHub Actions. See the git history for the
+specific files that were changed.
+
+This software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the LICENSE file
+for the specific language governing permissions and limitations under
+the License.

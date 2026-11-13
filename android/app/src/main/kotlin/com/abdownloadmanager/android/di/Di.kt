@@ -3,7 +3,6 @@ package com.abdownloadmanager.android.di
 import AndroidDirectLinkUpdateApplier
 import android.app.Application
 import android.content.Context
-import com.abdownloadmanager.github.GithubApi
 import com.abdownloadmanager.UpdateDownloadLocationProvider
 import com.abdownloadmanager.UpdateManager
 import com.abdownloadmanager.android.ABDMApp
@@ -24,7 +23,6 @@ import com.abdownloadmanager.android.util.ABDMServiceNotificationManager
 import com.abdownloadmanager.android.util.AndroidDefinedPaths
 import com.abdownloadmanager.android.util.AndroidDownloadItemOpener
 import com.abdownloadmanager.android.util.AppInfo
-import com.abdownloadmanager.shared.util.SharedConstants
 import com.abdownloadmanager.shared.ui.theme.ThemeManager
 import ir.amirab.downloader.queue.QueueManager
 import com.abdownloadmanager.shared.util.ui.icon.MyIcons
@@ -79,7 +77,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import com.abdownloadmanager.updatechecker.GithubUpdateChecker
+import com.abdownloadmanager.updatechecker.DisabledUpdateChecker
 import com.abdownloadmanager.updatechecker.UpdateChecker
 import ir.amirab.util.AppVersionTracker
 import com.abdownloadmanager.shared.util.appinfo.PreviousVersion
@@ -425,16 +423,7 @@ val updaterModule = module {
         )
     }
     single<UpdateChecker> {
-        GithubUpdateChecker(
-            AppVersion.get(),
-            githubApi = GithubApi(
-                owner = SharedConstants.projectGithubOwner,
-                repo = SharedConstants.projectGithubRepo,
-                client = OkHttpClient
-                    .Builder()
-                    .build()
-            )
-        )
+        DisabledUpdateChecker(AppVersion.get())
     }
     single {
         UpdateManager(

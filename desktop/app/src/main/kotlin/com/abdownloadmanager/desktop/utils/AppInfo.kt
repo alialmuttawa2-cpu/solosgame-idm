@@ -9,9 +9,9 @@ import okio.Path.Companion.toOkioPath
 import java.io.File
 
 object FileNameConstants {
-    const val mainApp = "ABDownloadManager"
-    const val cliApp = "ABDownloadManagerCli"
-    const val nativeMessagingHost = "ABDownloadManagerNativeMessagingHost"
+    val mainApp = SharedConstants.appName
+    val cliApp = "${SharedConstants.appName}Cli"
+    val nativeMessagingHost = "${SharedConstants.appName}NativeMessagingHost"
 }
 
 object AppInfo {

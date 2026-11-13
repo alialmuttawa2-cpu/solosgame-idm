@@ -1,0 +1,119 @@
+name: Windows installer
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      SKIP_ANDROID_BUILD: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: jetbrains
+          java-version: "25"
+
+      - name: Install NSIS
+        shell: pwsh
+        run: |
+          choco install nsis --no-progress -y
+          $makensis = "C:\Program Files (x86)\NSIS\makensis.exe"
+          if (-not (Test-Path $makensis)) {
+            $found = Get-Command makensis -ErrorAction SilentlyContinue
+            if (-not $found) { throw "makensis.exe was not installed" }
+            throw "NSIS installed, but not at $makensis (found $($found.Source))"
+          }
+          & $makensis /VERSION
+
+      - name: Test desktop, shared, and downloader modules
+        shell: bash
+        run: |
+          ./gradlew --stacktrace \
+            :desktop:app:test \
+            :desktop:app-utils:test \
+            :desktop:shared:test \
+            :desktop:mac_utils:test \
+            :desktop:slf4j-impl:test \
+            :downloader:core:desktopTest \
+            :downloader:monitor:desktopTest \
+            :shared:app:desktopTest \
+            :shared:utils:desktopTest \
+            :shared:updater:desktopTest \
+            :shared:config:test \
+            :shared:compose-utils:desktopTest \
+            :shared:auto-start:desktopTest \
+            :shared:resources:desktopTest \
+            :shared:resources:contracts:desktopTest \
+            :integration:server:test
+
+      - name: Build Windows installer
+        shell: bash
+        run: |
+          ./gradlew --stacktrace createReleaseFolderForCi
+          echo "Installer files:"
+          find build/ci-release/binaries -type f -print
+
+      - name: Launch smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $installer = Get-ChildItem -Path "build\ci-release\binaries" -Filter "*.exe" |
+            Select-Object -First 1
+          if (-not $installer) { throw "No installer .exe was produced" }
+          Write-Host "Installing $($installer.FullName)"
+          $env:SKIKO_RENDER_API = "SOFTWARE"
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($install.ExitCode -ne 0) {
+            throw "Silent install failed with exit code $($install.ExitCode)"
+          }
+          $exe = Join-Path $env:LOCALAPPDATA "SolosGameIDM\SolosGameIDM.exe"
+          if (-not (Test-Path $exe)) { throw "Installed executable not found at $exe" }
+          # The NSIS installer starts the app on success. Give it time to stay up.
+          Start-Sleep -Seconds 25
+          $running = Get-Process -Name "SolosGameIDM" -ErrorAction SilentlyContinue
+          $crash = Join-Path $env:USERPROFILE ".solosgame-idm\system\log\crash.log"
+          $hsErr = @()
+          $hsErr += Get-ChildItem -Path $env:LOCALAPPDATA\SolosGameIDM -Filter "hs_err_pid*.log" -Recurse -ErrorAction SilentlyContinue
+          $hsErr += Get-ChildItem -Path (Join-Path $env:USERPROFILE ".solosgame-idm") -Filter "hs_err_pid*.log" -Recurse -ErrorAction SilentlyContinue
+          if (Test-Path $crash) {
+            Write-Host "---- crash.log ----"
+            Get-Content $crash -Raw
+            throw "crash.log was written"
+          }
+          if ($hsErr) {
+            $hsErr | ForEach-Object { Write-Host $_.FullName; Get-Content $_.FullName -TotalCount 40 }
+            throw "JVM crash log found"
+          }
+          if (-not $running) {
+            Write-Host "Install directory:"
+            Get-ChildItem (Join-Path $env:LOCALAPPDATA "SolosGameIDM") | Select-Object Name
+            $logDir = Join-Path $env:USERPROFILE ".solosgame-idm\system\log"
+            if (Test-Path $logDir) {
+              Get-ChildItem $logDir -Recurse | ForEach-Object {
+                Write-Host "---- $($_.FullName) ----"
+                if (-not $_.PSIsContainer) { Get-Content $_.FullName -Raw }
+              }
+            }
+            throw "SolosGameIDM.exe is not running after 25 seconds"
+          }
+          Write-Host "SolosGameIDM is running (pid $($running.Id -join ', '))"
+          Stop-Process -Name "SolosGameIDM" -Force
+          Get-Process -Name "SolosGameIDMCli","SolosGameIDMNativeMessagingHost" -ErrorAction SilentlyContinue |
+            Stop-Process -Force
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SolosGame-IDM-windows-installer
+          path: build/ci-release/binaries/*.exe
+          if-no-files-found: error

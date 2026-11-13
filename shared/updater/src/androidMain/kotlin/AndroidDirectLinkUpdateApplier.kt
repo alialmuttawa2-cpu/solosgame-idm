@@ -13,7 +13,8 @@ class AndroidDirectLinkUpdateApplier(
     private val updateDownloader: UpdateDownloader,
 ) : BaseUpdateApplier() {
     override fun updateSupported(): Boolean {
-        return true
+        // SolosGame IDM does not apply upstream (or any) automatic updates.
+        return false
     }
 
     override fun getUpdatePreparer(): UpdatePreparer {

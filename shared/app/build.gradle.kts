@@ -108,13 +108,13 @@ buildConfig {
     buildConfigField(
         "PROJECT_WEBSITE",
         provider {
-            "https://abdownloadmanager.com"
+            "https://github.com/alialmuttawa2-cpu/solosgame-idm"
         }
     )
     buildConfigField(
         "PROJECT_SOURCE_CODE",
         provider {
-            "https://github.com/amir1376/ab-download-manager"
+            "https://github.com/alialmuttawa2-cpu/solosgame-idm"
         }
     )
     buildConfigField(
@@ -126,13 +126,14 @@ buildConfig {
     buildConfigField(
         "PROJECT_GITHUB_OWNER",
         provider {
-            "amir1376"
+            // Update checks are disabled. Do not point this fork at upstream releases.
+            ""
         }
     )
     buildConfigField(
         "PROJECT_GITHUB_REPO",
         provider {
-            "ab-download-manager"
+            ""
         }
     )
     buildConfigField(

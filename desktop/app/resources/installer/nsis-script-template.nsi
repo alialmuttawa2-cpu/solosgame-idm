@@ -15,6 +15,7 @@ SetCompressor /SOLID lzma
 !define SOURCE_CODE_URL "{{ source_code_url }}"
 !define PROJECT_WEBSITE "{{ project_website }}"
 !define COPYRIGHT "{{ copyright }}"
+!define UPGRADE_UUID "{{ upgrade_uuid }}"
 
 !define INPUT_DIR "{{ input_dir }}"
 !define LICENSE_FILE "{{ license_file }}"
@@ -195,6 +196,7 @@ Section "${APP_DISPLAY_NAME}"
 
     ; Registry information for add/remove programs
     WriteRegStr SHCTX "${REG_UNINSTALL_KEY}" "DisplayName" "${APP_DISPLAY_NAME}"
+    WriteRegStr SHCTX "${REG_UNINSTALL_KEY}" "UpgradeGuid" "${UPGRADE_UUID}"
     WriteRegStr SHCTX "${REG_UNINSTALL_KEY}" "DisplayIcon" "$\"${INSTALL_DIR}\${MAIN_BINARY_NAME}.exe$\""
     WriteRegStr SHCTX "${REG_UNINSTALL_KEY}" "DisplayVersion" "${APP_VERSION}"
     WriteRegStr SHCTX "${REG_UNINSTALL_KEY}" "Publisher" "${APP_PUBLISHER}"
